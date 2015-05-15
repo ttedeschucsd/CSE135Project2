@@ -31,9 +31,9 @@ public class HelperUtils {
 
     public static Connection connect() throws Exception {
         Class.forName("org.postgresql.Driver");
-        String url = "jdbc:postgresql://127.0.0.1:5432/cse135";
+        String url = "jdbc:postgresql://127.0.0.1:5432/aristocart";
         String user = "postgres";
-        String password = "postgres";
+        String password = "cse135";
         return DriverManager.getConnection(url, user, password);
     }
 }
