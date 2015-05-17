@@ -3,21 +3,22 @@
     import="helpers.*"%>
 
 <% List<CategoryWithCount> categories = CategoriesHelper.listCategories();
-	AnalyticsHelper.submitQuery(request);
+	AnalyticsHelper analyzer = new AnalyticsHelper();
+	TableHelper tableHelper = analyzer.submitQuery(request);
 	
 %>
 <div id="dropdowns">
 	<form name="query_form" action="analytics" method="post">
 		<label for="rows_dropdown">Rows</label>
 		<select name="rows_dropdown">
-			<"src/helpers/AnalyticsHelper.java"option value="0">--Please Select--</option>
+			<option value="0">--Please Select--</option>
 			<option value="1">Customers</option>
 			<option value="2">States</option>
 		</select>
 		<label for="orders_dropdown"></label>
 		<select name="orders_dropdown">
-			<option>Alphabetical</option>
-			<option>Top-K</option>
+			<option value="1">Alphabetical</option>
+			<option value="2">Top-K</option>
 		</select>
 		<label for="categories_dropdown"></label>
 		<select name="categories_dropdown">
