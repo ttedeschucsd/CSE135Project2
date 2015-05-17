@@ -6,3 +6,4 @@ bin
 Servers/
 RemoteSystemsTempFiles/.project
 CSE135Project2/build/
+CSE135Project2/src/helpers/HelperUtils.java
