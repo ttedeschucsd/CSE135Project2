@@ -10,7 +10,7 @@
 	<form name="query_form" action="analytics" method="post">
 		<label for="rows_dropdown">Rows</label>
 		<select name="rows_dropdown">
-			<option value="0">--Please Select--</option>
+			<"src/helpers/AnalyticsHelper.java"option value="0">--Please Select--</option>
 			<option value="1">Customers</option>
 			<option value="2">States</option>
 		</select>
@@ -35,8 +35,18 @@
 <div id="table">
 	<table>
 		<tr>
-			<td></td>
+			<td>Blank Cell</td>
+			<td>Headers for items here($total price)</td>
 		</tr>
-		
+		<tr>
+			<td>First item in row always customer or state ($total amount)</td>
+		</tr>
 	</table>
+	<br />
+	<form>
+		<button type="submit">Next 20 VV</button>
+	</form>
+	<form>
+		<button type="submit">Next 10 >></button>
+	</form>
 </div>
