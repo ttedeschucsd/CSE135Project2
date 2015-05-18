@@ -5,11 +5,12 @@ import java.util.*;
 public class TableHelper {
 	public ArrayList<Header> rowHeaders;
 	public ArrayList<Header> colHeaders;
-	public int [][] itemTotals;		//[column][row]
+	public int [][] itemTotals;		//[row][column]
 	
 	public TableHelper(){
 		rowHeaders = new ArrayList<>();
 		colHeaders = new ArrayList<>();
+		itemTotals = new int[20][10];
 	}
 	
 	public void addRowHeader(Header header){
@@ -18,5 +19,15 @@ public class TableHelper {
 	
 	public void addColHeader(Header header){
 		colHeaders.add(header);
+	}
+	
+	public void addTableRow(Map<Integer, Integer> input, int rowIndex){
+		for(int i=0; i<colHeaders.size(); i++){
+			int prodId = colHeaders.get(i).id;
+			if(input.containsKey(prodId)){
+				int totalVal = input.get(prodId);
+				itemTotals[rowIndex][i] = totalVal;
+			}
+		}
 	}
 }

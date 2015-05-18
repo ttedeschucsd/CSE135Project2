@@ -1,11 +1,14 @@
 	package helpers;
 
 	import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -14,9 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 		private int limitColEnd, limitRowEnd;
 		public TableHelper table;
 		private boolean byUser;
+		private Connection conn;
 		
 		public TableHelper submitQuery(HttpServletRequest request){
-	        Connection conn = null;
 	        Statement stmt = null;
 	        ResultSet rowRs = null;
 	        ResultSet colRs = null;
@@ -67,6 +70,8 @@ import javax.servlet.http.HttpServletRequest;
 	            	Integer total = colRs.getInt(3);
 	            	table.addColHeader(new Header(id, name, total));
 	            }
+	            
+	            getAllItems();
 	            
 	        } catch(Exception e){
 	        	System.err.println("Query failed");
@@ -160,5 +165,44 @@ import javax.servlet.http.HttpServletRequest;
 			}
 			query = select + where + group + order;
 			return query;
+		}
+		
+		private void getAllItems(){
+			//HAVE TO REMEMBER TO LIMIT number of users/states AND number of products
+			
+			//Query for all items: SELECT u.id, p.id, u.name, SUM(sa.price*sa.quantity) as total FROM users as u JOIN sales as sa ON u.id = sa.uid JOIN products as p ON p.id = sa.pid GROUP BY p.id, u.id
+			
+			//Another way to get data more evenly without having to programmatically sort it:
+			
+			//For each row header, get all items for that row sorted correctly, and insert the data.
+				//This way, there is less sorting, but more overall queries being run (less database calls the better?)
+			
+			String sql = "SELECT p.id, SUM(sa.price*sa.quantity) as total FROM users as u JOIN sales as sa ON u.id = sa.uid JOIN products as p ON p.id = sa.pid WHERE u.id = ? GROUP BY p.id, u.id";	//This needs to be updated
+			ResultSet rs;
+			try {
+				PreparedStatement stmt = conn.prepareStatement(sql);
+			
+				ArrayList<Header> rows = table.rowHeaders;
+			
+				//In this case, i = row index in table
+				for(int i=0; i<rows.size(); i++){
+					int userId = rows.get(i).id;
+					stmt.setInt(1, userId);
+					rs = stmt.executeQuery();
+					Map<Integer, Integer> totals = new HashMap<Integer, Integer>();
+					while(rs.next()){
+						totals.put(rs.getInt(1), rs.getInt(2));		//1 is the product id, 2 is the total
+					}
+					if(totals.size()>0){
+						table.addTableRow(totals, i);
+					}
+				}
+			
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return;
 		}
 }
