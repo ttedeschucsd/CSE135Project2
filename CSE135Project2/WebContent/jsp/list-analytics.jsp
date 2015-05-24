@@ -7,8 +7,8 @@
 <% List<CategoryWithCount> categories = CategoriesHelper.listCategories();
 	AnalyticsHelper analyzer = new AnalyticsHelper();
 	TableHelper tableHelper = analyzer.submitQuery(request);
-	
 %>
+
 <div id="dropdowns">
 	<form name="query_form" action="analytics" method="post">
 		<label for="rows_dropdown">Rows</label>

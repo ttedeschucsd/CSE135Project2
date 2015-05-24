@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 		private boolean byUser;
 		private Connection conn;
 		
+		
 		public TableHelper submitQuery(HttpServletRequest request){
 	        Statement stmt = null;
 	        ResultSet rowRs = null;
@@ -47,20 +48,13 @@ import javax.servlet.http.HttpServletRequest;
 	            } catch (Exception e) {
 	                System.err.println("Internal Server Error. This shouldn't happen.");
 	                return null;
-	            }	
+	            }
+	        	createTempTables();
 	        	stmt = conn.createStatement();	//Prepare the sql statement
-	            String rowHeadQuery = getRowHeaders();
+	            getRowHeaders();
 	            String colHeadQuery = getColHeaders();
 	            //This is the query string
-	            rowRs = stmt.executeQuery(rowHeadQuery);	//Actually call the database here
 	           
-	            
-	            while (rowRs.next()) {
-	            	Integer id = rowRs.getInt(1);
-	                String name = rowRs.getString(2);
-	                Integer total = rowRs.getInt(3);
-	                table.addRowHeader(new Header(id, name, total));
-	            }
 	            
 	            colRs = stmt.executeQuery(colHeadQuery);
 	            
@@ -103,16 +97,27 @@ import javax.servlet.http.HttpServletRequest;
 //			query = "SELECT p.id, " + custOrStates + "products as p, sales as sa";
 //			return query; 
 //		}
+		private void createTempTables() throws SQLException{
+			Statement stmt = null;
+			stmt = conn.createStatement();
+			String createColHeaders = "CREATE TEMPORARY TABLE col_headers(id SERIAL PRIMARY KEY  NOT NULL, pid integer, pname text, total integer DEFAULT 0)";
+			String createRowHeaders = "CREATE TEMPORARY TABLE row_headers(id serial PRIMARY KEY NOT NULL, soruid integer, soruname text, total integer);";
+			stmt.execute(createColHeaders);
+			stmt.execute(createRowHeaders);
+		}
 		
 		
-		
-		private String getRowHeaders(){
-			String select, group, order, tables, where, query;
+		private void getRowHeaders() throws SQLException{
+			ResultSet rows = null;
+			Statement stmt = null;
+			stmt = conn.createStatement();
+			String insert, select, group, order, tables, where, query;
 			//Query for customers: SELECT u.id, u.name, SUM(sa.price*sa.quantity) FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid GROUP BY u.id
 			//Query for states: SELECT s.name, SUM(sa.price*sa.quantity) FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid LEFT JOIN states as s ON u.state = s.id GROUP BY s.id
+			insert = "INSERT INTO row_headers(soruid, soruname, total)";
 			
-			if(byUser){
-				select = "SELECT u.id, u.name, SUM(sa.price*sa.quantity) ";
+			if(byUser){				
+				select = "(SELECT u.id, u.name, SUM(sa.price*sa.quantity) ";
 				order = "";
 				tables = "FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid ";
 				group = " u.id ";
@@ -122,7 +127,7 @@ import javax.servlet.http.HttpServletRequest;
 					order = "sum DESC ";
 				}
 			} else{
-				select = "SELECT s.name, SUM(sa.price*sa.quantity) ";
+				select = "(SELECT s.name, SUM(sa.price*sa.quantity) ";
 				order = "";
 				tables = "FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid LEFT JOIN states as s ON u.state = s.id ";
 				group = " s.name ";
@@ -137,18 +142,25 @@ import javax.servlet.http.HttpServletRequest;
 				tables += "LEFT JOIN products as p ON sa.pid = p.id LEFT JOIN categories as c ON c.id = p.cid ";
 				where = "WHERE c.id = " + categoriesItem + " ";
 			}
-			
-			query = select + tables + where + "GROUP BY" + group + "ORDER BY " + order + "LIMIT " + limitRowEnd;
-			
-			return query;
+			query = insert + select + tables + where + "GROUP BY" + group + "ORDER BY " + order + "LIMIT " + limitRowEnd + ")";
+			stmt.execute(query);
+			query = "SELECT * FROM row_headers";
+			rows = stmt.executeQuery(query);
+			while (rows.next()) {
+            	Integer id = rows.getInt(1);
+                String name = rows.getString(3);
+                Integer total = rows.getInt(4);
+                table.addRowHeader(new Header(id, name, total));
+            }
+			return;
 		}
 		
 		
 		
 		private String getColHeaders(){
-			String select, order, group, query, where;
+			String insert, select, order, group, query, where;
 			//Query: SELECT p.name, SUM(sa.price*sa.quantity) FROM sales as sa LEFT JOIN products as p on sa.pid = p.id GROUP BY p.name	ORDER BY sum DESC LIMIT 20
-			
+			insert = 
 			select = "SELECT p.id, p.name, SUM(sa.price*sa.quantity) FROM sales as sa LEFT JOIN products as p on sa.pid = p.id ";
 			group = "GROUP BY p.name, p.id ";
 			order = "";

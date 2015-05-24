@@ -7,7 +7,6 @@
     
 <%
 ArrayList<String> stringList = new ArrayList<>();
-String json = new Gson().toJson(stringList);
 
 
 %>
