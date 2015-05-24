@@ -1,6 +1,8 @@
 <%@page
     import="java.util.List"
     import="helpers.*"%>
+    <script type="text/JavaScript" src="js/list-analytics.js"></script> 
+    
 
 <% List<CategoryWithCount> categories = CategoriesHelper.listCategories();
 	AnalyticsHelper analyzer = new AnalyticsHelper();
@@ -45,9 +47,9 @@
 	</table>
 	<br />
 	<form>
-		<button type="submit">Next 20 VV</button>
+		<button id="next_20">Next 20 VV</button>
 	</form>
 	<form>
-		<button type="submit">Next 10 >></button>
+		<button id="next_10">Next 10 >></button>
 	</form>
 </div>
