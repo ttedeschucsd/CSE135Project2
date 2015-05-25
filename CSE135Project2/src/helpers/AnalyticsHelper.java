@@ -65,7 +65,7 @@ import javax.servlet.http.HttpServletRequest;
 			Statement stmt = null;
 			stmt = conn.createStatement();
 			String createColHeaders = "CREATE TEMPORARY TABLE col_headers(id SERIAL PRIMARY KEY  NOT NULL, pid integer, pname text, total integer DEFAULT 0)";
-			String createRowHeaders = "CREATE TEMPORARY TABLE row_headers(id serial PRIMARY KEY NOT NULL, soruid integer, soruname text, total integer);";
+			String createRowHeaders = "CREATE TEMPORARY TABLE row_headers(id serial PRIMARY KEY NOT NULL, soruid integer, soruname text, stateid integer, userid integer, total integer);";
 			stmt.execute(createColHeaders);
 			stmt.execute(createRowHeaders);
 		}
@@ -77,12 +77,12 @@ import javax.servlet.http.HttpServletRequest;
 			String insert, select, group, order, tables, where, query;
 			//Query for customers: SELECT u.id, u.name, SUM(sa.price*sa.quantity) FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid GROUP BY u.id
 			//Query for states: SELECT s.name, SUM(sa.price*sa.quantity) FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid LEFT JOIN states as s ON u.state = s.id GROUP BY s.id
-			insert = "INSERT INTO row_headers(soruid, soruname, total)";
+			insert = "INSERT INTO row_headers(soruid, soruname, stateid, userid, total)";
 			
 			if(byUser){				
-				select = "(SELECT u.id, u.name, SUM(sa.price*sa.quantity) ";
+				select = "(SELECT u.id, u.name, s.id, u.id, SUM(sa.price*sa.quantity) ";
 				order = "";
-				tables = "FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid ";
+				tables = "FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid LEFT JOIN states as s on s.id = u.state";
 				group = " u.id ";
 				if(orderingItem.equals("1")){ //alphabetical
 					order = "u.name ASC ";
@@ -90,10 +90,10 @@ import javax.servlet.http.HttpServletRequest;
 					order = "sum DESC ";
 				}
 			} else{
-				select = "(SELECT s.name, SUM(sa.price*sa.quantity) ";
+				select = "(SELECT s.id, s.name, s.id, u.id, SUM(sa.price*sa.quantity) ";
 				order = "";
 				tables = "FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid LEFT JOIN states as s ON u.state = s.id ";
-				group = " s.name ";
+				group = " s.id, u.id ";
 				if(orderingItem.equals("1")){ //alphabetical
 					order = "s.name ASC ";
 				} else if(orderingItem.equals("2")){
@@ -112,7 +112,7 @@ import javax.servlet.http.HttpServletRequest;
 			while (rows.next()) {
             	Integer id = rows.getInt(1);
                 String name = rows.getString(3);
-                Integer total = rows.getInt(4);
+                Integer total = rows.getInt(6);
                 table.addRowHeader(new Header(id, name, total));
             }
 			return;
@@ -159,12 +159,21 @@ import javax.servlet.http.HttpServletRequest;
 			//HAVE TO REMEMBER TO LIMIT number of users/states AND number of products
 			ResultSet items = null;
 			Statement stmt = null;
-			String query;
-			int pid, colid, rowid, total;
+			String query, userOrState, stateExtra;
+			if(byUser){
+				userOrState = "LEFT JOIN users as u ON row.soruid = u.id ";
+				stateExtra = "";
+			} else{
+				userOrState = "LEFT JOIN states as s ON row.soruid = s.id ";
+				stateExtra = "LEFT JOIN users as u on row.userid = u.id ";
+			}
 			
 			stmt = conn.createStatement();
+			
 			query = "SELECT p.id, col.id AS column, row.id AS row, SUM(sa.price*sa.quantity) as total "
-					+ "FROM row_headers AS row LEFT JOIN users as u ON row.soruid = u.id "
+					+ "FROM row_headers AS row "
+					+ userOrState
+					+ stateExtra
 					+ "LEFT JOIN sales as sa ON u.id = sa.uid "
 					+ "RIGHT JOIN col_headers AS col ON col.pid = sa.pid "
 					+ "LEFT JOIN products as p ON p.id = col.pid "

@@ -43,14 +43,14 @@
 			<% 
 				for(Header col : itemTable.colHeaders){ 
 			%>
-				<td><%= col.name %> (<%= col.total%>)</td>
+				<td><b><%= col.name.substring(0,9) %></b> (<%= col.total%>)</td>
 			<% } %>
 		</tr>
 		<% 
 			for(Header row : itemTable.rowHeaders){ 
 		%>
 			<tr>
-				<td><%= row.name %> (<%= row.total %>)</td>
+				<td><b><%= row.name %></b> (<%= row.total %>)</td>
 				<%
 					for(int i=1; i< 11; i++){
 				%>
