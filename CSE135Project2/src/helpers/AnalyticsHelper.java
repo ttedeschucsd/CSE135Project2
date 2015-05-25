@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 
 	public class AnalyticsHelper {
 		private String rowsItem, categoriesItem, orderingItem;
-		private int limitColEnd, limitRowEnd;
+		public String limitColEnd, limitRowEnd, rowoffset, coloffset;
 		public TableHelper table;
 		private boolean byUser;
 		private Connection conn;
@@ -26,8 +26,19 @@ import javax.servlet.http.HttpServletRequest;
 	        ResultSet colRs = null;
 	        
 	        table = new TableHelper();
-	        limitRowEnd = 20;
-	        limitColEnd = 10;
+	        limitRowEnd = "20";
+	        limitColEnd = "10";
+	        rowoffset = "";
+	        coloffset = "";
+	        String tempRow = request.getParameter("row");
+	        String tempCol = request.getParameter("col");
+	        if(tempRow != null){
+	        	 rowoffset = "OFFSET " + tempRow;
+	        }
+	        if(tempCol != null){
+	        	coloffset = "OFFSET " + tempCol;
+	        }
+	        
 	        rowsItem = request.getParameter("rows_dropdown");	//Customers(1) or States(2)
 	        categoriesItem = request.getParameter("categories_dropdown");	//All Categories(0)
 	        orderingItem = request.getParameter("orders_dropdown");	//How the data should be ordered
@@ -105,7 +116,7 @@ import javax.servlet.http.HttpServletRequest;
 				tables += "LEFT JOIN products as p ON sa.pid = p.id LEFT JOIN categories as c ON c.id = p.cid ";
 				where = "WHERE c.id = " + categoriesItem + " ";
 			}
-			query = insert + select + tables + where + "GROUP BY" + group + "ORDER BY " + order + "LIMIT " + limitRowEnd + ")";
+			query = insert + select + tables + where + "GROUP BY" + group + "ORDER BY " + order + rowoffset + " LIMIT " + limitRowEnd + ")";
 			stmt.execute(query);
 			query = "SELECT * FROM row_headers";
 			rows = stmt.executeQuery(query);
@@ -133,9 +144,9 @@ import javax.servlet.http.HttpServletRequest;
 			where = "";
 			
 			if(orderingItem.equals("1")){
-				order = "ORDER BY p.name ASC LIMIT " + limitColEnd;
+				order = "ORDER BY p.name ASC " + coloffset + " LIMIT " + limitColEnd;
 			} else if(orderingItem.equals("2")){
-				order = "ORDER BY sum DESC LIMIT " + limitColEnd;
+				order = "ORDER BY sum DESC " + coloffset + " LIMIT " + limitColEnd;
 			}
 			
 			if(!categoriesItem.equals("0")){

@@ -67,4 +67,6 @@
 	<form>
 		<button id="next_10">Next 10 >></button>
 	</form>
+	<input type="hidden" id="hiddenrow" value="<%= analyzer.limitRowEnd %>">
+	<input type="hidden" id="hiddencol" value="<%= analyzer.limitColEnd%>">
 </div>
