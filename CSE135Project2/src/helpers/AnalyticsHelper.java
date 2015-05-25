@@ -98,7 +98,7 @@ import javax.servlet.http.HttpServletRequest;
 				if(orderingItem.equals("1")){ //alphabetical
 					order = "u.name ASC ";
 				} else if(orderingItem.equals("2")){
-					order = "sum DESC ";
+					order = "sum DESC NULLS LAST ";
 				}
 			} else{
 				select = "(SELECT s.id, s.name, s.id, u.id, SUM(sa.price*sa.quantity) ";
@@ -108,7 +108,7 @@ import javax.servlet.http.HttpServletRequest;
 				if(orderingItem.equals("1")){ //alphabetical
 					order = "s.name ASC ";
 				} else if(orderingItem.equals("2")){
-					order = "sum DESC ";
+					order = "sum DESC NULLS LAST ";
 				}
 			}
 			where = "";
@@ -146,7 +146,7 @@ import javax.servlet.http.HttpServletRequest;
 			if(orderingItem.equals("1")){
 				order = "ORDER BY p.name ASC " + coloffset + " LIMIT " + limitColEnd;
 			} else if(orderingItem.equals("2")){
-				order = "ORDER BY sum DESC " + coloffset + " LIMIT " + limitColEnd;
+				order = "ORDER BY sum DESC NULLS LAST " + coloffset + " LIMIT " + limitColEnd;
 			}
 			
 			if(!categoriesItem.equals("0")){
