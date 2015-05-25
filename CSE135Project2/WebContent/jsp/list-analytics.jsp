@@ -17,7 +17,7 @@
     
 
 <% List<CategoryWithCount> categories = CategoriesHelper.listCategories();
-	AnalyticsHelper analyzer = new AnalyticsHelper();
+	AnalyticsHelper analyzer = new AnalyticsHelper(request);
 	TableHelper itemTable = analyzer.submitQuery(request);
 %>
 
@@ -25,14 +25,25 @@
 	<form name="query_form" action="analytics" method="post">
 		<label for="rows_dropdown">Rows</label>
 		<select name="rows_dropdown">
-			<option value="0">--Please Select--</option>
-			<option value="1">Customers</option>
-			<option value="2">States</option>
+			<% if(analyzer.rowsItem != null){ %>
+				<option value="0">--Please Select--</option>
+				<option value="1" <%=(analyzer.rowsItem.equals("1")) ? "selected" : ""%>>Customers</option>
+				<option value="2" <%=(analyzer.rowsItem.equals("2")) ? "selected" : ""%>>States</option>
+			<%} else { %>
+				<option value="0">--Please Select--</option>
+				<option value="1" >Customers</option>
+				<option value="2" >States</option>
+			<% }%>
 		</select>
 		<label for="orders_dropdown"></label>
 		<select name="orders_dropdown">
-			<option value="1">Alphabetical</option>
-			<option value="2">Top-K</option>
+			<% if(analyzer.orderingItem != null){ %>
+				<option value="1" <%=(analyzer.orderingItem.equals("1")) ? "selected" : ""%>>Alphabetical</option>
+				<option value="2" <%=(analyzer.orderingItem.equals("2")) ? "selected" : ""%>>Top-K</option>
+			<% } else { %>
+				<option value="1">Alphabetical</option>
+				<option value="2">Top-K</option>
+			<% } %>
 		</select>
 		<label for="categories_dropdown"></label>
 		<select name="categories_dropdown">
@@ -40,8 +51,12 @@
 		<%
         	for (CategoryWithCount cwc : categories) {
         %>
-			<option value = "<%=cwc.getId()%>"><%=cwc.getName()%></option>
-		<%} %>
+	        <% if( analyzer.categoriesItem != null){ %>
+				<option value = "<%=cwc.getId()%>" <%=(analyzer.categoriesItem.equals(Integer.toString(cwc.getId()))) ? "selected" : ""%>><%=cwc.getName()%></option>
+			<% } else { %>
+				<option value = "<%=cwc.getId()%>"><%=cwc.getName()%></option>
+			<% } %>
+		<% } %>
 		</select>
 		<button type="submit">Run Query</button>
 	</form>

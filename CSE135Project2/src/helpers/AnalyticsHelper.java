@@ -13,11 +13,17 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 	public class AnalyticsHelper {
-		private String rowsItem, categoriesItem, orderingItem;
+		public String rowsItem, categoriesItem, orderingItem;
 		public String limitColEnd, limitRowEnd, rowoffset, coloffset;
 		public TableHelper table;
 		private boolean byUser;
 		private Connection conn;
+		
+		public AnalyticsHelper(HttpServletRequest request){
+			rowsItem = request.getParameter("rows_dropdown");	//Customers(1) or States(2)
+	        categoriesItem = request.getParameter("categories_dropdown");	//All Categories(0)
+	        orderingItem = request.getParameter("orders_dropdown");	//How the data should be ordered
+		}
 		
 		
 		public TableHelper submitQuery(HttpServletRequest request){
@@ -39,9 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 	        	coloffset = "OFFSET " + tempCol;
 	        }
 	        
-	        rowsItem = request.getParameter("rows_dropdown");	//Customers(1) or States(2)
-	        categoriesItem = request.getParameter("categories_dropdown");	//All Categories(0)
-	        orderingItem = request.getParameter("orders_dropdown");	//How the data should be ordered
+	        
 	        
 	        if(rowsItem == null || categoriesItem == null || orderingItem == null){		//If there was no request
 	        	return null;
