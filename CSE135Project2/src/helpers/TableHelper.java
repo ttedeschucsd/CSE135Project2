@@ -10,7 +10,7 @@ public class TableHelper {
 	public TableHelper(){
 		rowHeaders = new ArrayList<>();
 		colHeaders = new ArrayList<>();
-		itemTotals = new int[20][10];
+		itemTotals = new int[21][11];
 	}
 	
 	public void addRowHeader(Header header){
@@ -29,5 +29,9 @@ public class TableHelper {
 				itemTotals[rowIndex][i] = totalVal;
 			}
 		}
+	}
+	
+	public void addItem(int row, int col, int total){
+		itemTotals[row][col] = total;
 	}
 }

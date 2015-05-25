@@ -52,21 +52,8 @@ import javax.servlet.http.HttpServletRequest;
 	        	createTempTables();
 	        	stmt = conn.createStatement();	//Prepare the sql statement
 	            getRowHeaders();
-	            String colHeadQuery = getColHeaders();
-	            //This is the query string
-	           
-	            
-	            colRs = stmt.executeQuery(colHeadQuery);
-	            
-	            while (colRs.next()){
-	            	Integer id = colRs.getInt(1);
-	            	String name = colRs.getString(2);
-	            	Integer total = colRs.getInt(3);
-	            	table.addColHeader(new Header(id, name, total));
-	            }
-	            
+	            getColHeaders();
 	            getAllItems();
-	            
 	        } catch(Exception e){
 	        	System.err.println("Query failed");
 	        }
@@ -74,29 +61,6 @@ import javax.servlet.http.HttpServletRequest;
 	        return table;
 		}
 		
-//		private String buildQuery(){
-//			String query = "";
-//			String custOrStates = "";
-//			String categoriesId = "";
-//			if(rowsItem.equals("1")){		//If customers is selected
-//				byUser = true;
-//				custOrStates = "u.name, u.id FROM users as u,";
-//			} else if(rowsItem.equals("2")){		//If states is selected
-//				custOrStates = "s.name, s.id FROM states as s,";
-//				byUser = false;
-//			} else if(rowsItem.equals("0")){
-//				return null;
-//			}
-//			
-//			if(categoriesItem.equals("0")){		//All categories
-//				categoriesId = "";
-//			} else{				//Category by ID
-//				categoriesId = "p.cid = " + categoriesItem;
-//			}
-//			
-//			query = "SELECT p.id, " + custOrStates + "products as p, sales as sa";
-//			return query; 
-//		}
 		private void createTempTables() throws SQLException{
 			Statement stmt = null;
 			stmt = conn.createStatement();
@@ -105,7 +69,6 @@ import javax.servlet.http.HttpServletRequest;
 			stmt.execute(createColHeaders);
 			stmt.execute(createRowHeaders);
 		}
-		
 		
 		private void getRowHeaders() throws SQLException{
 			ResultSet rows = null;
@@ -154,17 +117,21 @@ import javax.servlet.http.HttpServletRequest;
             }
 			return;
 		}
-		
-		
-		
-		private String getColHeaders(){
-			String insert, select, order, group, query, where;
-			//Query: SELECT p.name, SUM(sa.price*sa.quantity) FROM sales as sa LEFT JOIN products as p on sa.pid = p.id GROUP BY p.name	ORDER BY sum DESC LIMIT 20
-			insert = 
-			select = "SELECT p.id, p.name, SUM(sa.price*sa.quantity) FROM sales as sa LEFT JOIN products as p on sa.pid = p.id ";
+			
+		private void getColHeaders() throws SQLException{
+			ResultSet cols = null;
+			Statement stmt = null;
+			
+			String insert, select, order, group, query, where;			
+			stmt = conn.createStatement();
+
+			//Query: INSERT INTO col_headers(pid, pname, total) (SELECT p.id, p.name, SUM(sa.price*sa.quantity) FROM products as p LEFT JOIN sales as sa on p.id = sa.pid GROUP BY p.name, p.id ORDER BY p.name ASC)
+			insert = "INSERT INTO col_headers(pid, pname, total)";
+			select = "(SELECT p.id, p.name, SUM(sa.price*sa.quantity) FROM products as p LEFT JOIN sales as sa on sa.pid = p.id ";
 			group = "GROUP BY p.name, p.id ";
 			order = "";
 			where = "";
+			
 			if(orderingItem.equals("1")){
 				order = "ORDER BY p.name ASC LIMIT " + limitColEnd;
 			} else if(orderingItem.equals("2")){
@@ -175,46 +142,37 @@ import javax.servlet.http.HttpServletRequest;
 				select += "LEFT JOIN categories as c on p.cid = c.id ";
 				where = "WHERE c.id = " + categoriesItem + " ";
 			}
-			query = select + where + group + order;
-			return query;
+			query = insert + select + where + group + order + ")";
+			stmt.execute(query);
+			query = "SELECT * FROM col_headers";
+			cols = stmt.executeQuery(query);
+			while (cols.next()){
+            	Integer id = cols.getInt(1);
+            	String name = cols.getString(3);
+            	Integer total = cols.getInt(4);
+            	table.addColHeader(new Header(id, name, total));
+            }
+			return;
 		}
 		
-		private void getAllItems(){
+		private void getAllItems() throws SQLException{
 			//HAVE TO REMEMBER TO LIMIT number of users/states AND number of products
+			ResultSet items = null;
+			Statement stmt = null;
+			String query;
+			int pid, colid, rowid, total;
 			
-			//Query for all items: SELECT u.id, p.id, u.name, SUM(sa.price*sa.quantity) as total FROM users as u JOIN sales as sa ON u.id = sa.uid JOIN products as p ON p.id = sa.pid GROUP BY p.id, u.id
-			
-			//Another way to get data more evenly without having to programmatically sort it:
-			
-			//For each row header, get all items for that row sorted correctly, and insert the data.
-				//This way, there is less sorting, but more overall queries being run (less database calls the better?)
-			
-			String sql = "SELECT p.id, SUM(sa.price*sa.quantity) as total FROM users as u JOIN sales as sa ON u.id = sa.uid JOIN products as p ON p.id = sa.pid WHERE u.id = ? GROUP BY p.id, u.id";	//This needs to be updated
-			ResultSet rs;
-			try {
-				PreparedStatement stmt = conn.prepareStatement(sql);
-			
-				ArrayList<Header> rows = table.rowHeaders;
-			
-				//In this case, i = row index in table
-				for(int i=0; i<rows.size(); i++){
-					int userId = rows.get(i).id;
-					stmt.setInt(1, userId);
-					rs = stmt.executeQuery();
-					Map<Integer, Integer> totals = new HashMap<Integer, Integer>();
-					while(rs.next()){
-						totals.put(rs.getInt(1), rs.getInt(2));		//1 is the product id, 2 is the total
-					}
-					if(totals.size()>0){
-						table.addTableRow(totals, i);
-					}
-				}
-			
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			stmt = conn.createStatement();
+			query = "SELECT p.id, col.id AS column, row.id AS row, SUM(sa.price*sa.quantity) as total "
+					+ "FROM row_headers AS row LEFT JOIN users as u ON row.soruid = u.id "
+					+ "LEFT JOIN sales as sa ON u.id = sa.uid "
+					+ "RIGHT JOIN col_headers AS col ON col.pid = sa.pid "
+					+ "LEFT JOIN products as p ON p.id = col.pid "
+					+ "GROUP BY p.id, col.id, row.id";
+			items = stmt.executeQuery(query);
+			while(items.next()){
+				table.addItem(items.getInt(3), items.getInt(2), items.getInt(4));
 			}
-			
 			return;
 		}
 }
