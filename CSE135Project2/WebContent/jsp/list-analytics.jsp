@@ -6,7 +6,7 @@
 
 <% List<CategoryWithCount> categories = CategoriesHelper.listCategories();
 	AnalyticsHelper analyzer = new AnalyticsHelper();
-	TableHelper tableHelper = analyzer.submitQuery(request);
+	TableHelper itemTable = analyzer.submitQuery(request);
 %>
 
 <div id="dropdowns">
@@ -36,15 +36,30 @@
 	
 </div>
 <div id="table">
+<%if (itemTable != null){ %>
 	<table>
 		<tr>
-			<td>Blank Cell</td>
-			<td>Headers for items here($total price)</td>
+			<td>     </td>
+			<% 
+				for(Header col : itemTable.colHeaders){ 
+			%>
+				<td><%= col.name %> (<%= col.total%>)</td>
+			<% } %>
 		</tr>
-		<tr>
-			<td>First item in row always customer or state ($total amount)</td>
-		</tr>
+		<% 
+			for(Header row : itemTable.rowHeaders){ 
+		%>
+			<tr>
+				<td><%= row.name %> (<%= row.total %>)</td>
+				<%
+					for(int i=1; i< 11; i++){
+				%>
+					<td><%= itemTable.itemTotals[row.id][i] %></td>
+				<% } %>
+			</tr>
+		<% } %>
 	</table>
+<% } %>
 	<br />
 	<form>
 		<button id="next_20">Next 20 VV</button>
