@@ -13,7 +13,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 	public class AnalyticsHelper {
-		public String rowsItem, categoriesItem, orderingItem;
+		public String rowsItem, categoriesItem, orderingItem, tempRow, tempCol;
 		public String limitColEnd, limitRowEnd, rowoffset, coloffset;
 		public TableHelper table;
 		private boolean byUser;
@@ -36,8 +36,8 @@ import javax.servlet.http.HttpServletRequest;
 	        limitColEnd = "10";
 	        rowoffset = "";
 	        coloffset = "";
-	        String tempRow = request.getParameter("row");
-	        String tempCol = request.getParameter("col");
+	        tempRow = request.getParameter("row");
+	        tempCol = request.getParameter("col");
 	        if(tempRow != null){
 	        	 rowoffset = "OFFSET " + tempRow;
 	        }
