@@ -82,8 +82,8 @@ import javax.servlet.http.HttpServletRequest;
 			if(byUser){				
 				select = "(SELECT u.id, u.name, s.id, u.id, SUM(sa.price*sa.quantity) ";
 				order = "";
-				tables = "FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid LEFT JOIN states as s on s.id = u.state";
-				group = " u.id ";
+				tables = "FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid LEFT JOIN states as s on s.id = u.state ";
+				group = " u.id, s.id ";
 				if(orderingItem.equals("1")){ //alphabetical
 					order = "u.name ASC ";
 				} else if(orderingItem.equals("2")){
@@ -92,7 +92,7 @@ import javax.servlet.http.HttpServletRequest;
 			} else{
 				select = "(SELECT s.id, s.name, s.id, u.id, SUM(sa.price*sa.quantity) ";
 				order = "";
-				tables = "FROM users as u LEFT JOIN sales as sa ON u.id = sa.uid LEFT JOIN states as s ON u.state = s.id ";
+				tables = "FROM states as s LEFT JOIN users as u ON s.id = u.state LEFT JOIN sales as sa ON u.id = sa.uid ";
 				group = " s.id, u.id ";
 				if(orderingItem.equals("1")){ //alphabetical
 					order = "s.name ASC ";

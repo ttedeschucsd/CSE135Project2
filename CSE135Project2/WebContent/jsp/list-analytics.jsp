@@ -43,7 +43,7 @@
 			<% 
 				for(Header col : itemTable.colHeaders){ 
 			%>
-				<td><b><%= col.name.substring(0,9) %></b> (<%= col.total%>)</td>
+				<td><b><%= (col.name.length() < 10) ? col.name : col.name.substring(0,9) %></b> (<%= col.total%>)</td>
 			<% } %>
 		</tr>
 		<% 
