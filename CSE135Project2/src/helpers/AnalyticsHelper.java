@@ -112,10 +112,6 @@ import javax.servlet.http.HttpServletRequest;
 				}
 			}
 			where = "";
-			if(!categoriesItem.equals("0")){
-				tables += "LEFT JOIN products as p ON sa.pid = p.id LEFT JOIN categories as c ON c.id = p.cid ";
-				where = "WHERE c.id = " + categoriesItem + " ";
-			}
 			query = insert + select + tables + where + "GROUP BY" + group + "ORDER BY " + order + rowoffset + " LIMIT " + limitRowEnd + ")";
 			stmt.execute(query);
 			query = "SELECT * FROM row_headers";

@@ -1,7 +1,19 @@
 <%@page
     import="java.util.List"
     import="helpers.*"%>
-    <script type="text/JavaScript" src="js/list-analytics.js"></script> 
+    <script type="text/JavaScript" src="js/list-analytics.js"></script>
+    
+    <style>
+		table{
+    		border: 1px solid black;
+ 		}
+ 		
+ 		td{
+ 			border: 1px solid black;
+ 			text-align: center;
+ 			padding: 10px;
+ 		} 
+	</style> 
     
 
 <% List<CategoryWithCount> categories = CategoriesHelper.listCategories();
@@ -47,12 +59,13 @@
 			<% } %>
 		</tr>
 		<% 
+			int size = itemTable.colHeaders.size()+1;
 			for(Header row : itemTable.rowHeaders){ 
 		%>
 			<tr>
 				<td><b><%= row.name %></b> (<%= row.total %>)</td>
 				<%
-					for(int i=1; i< 11; i++){
+					for(int i=1; i<size; i++){
 				%>
 					<td><%= itemTable.itemTotals[row.id][i] %></td>
 				<% } %>
@@ -67,6 +80,6 @@
 	<form>
 		<button id="next_10">Next 10 >></button>
 	</form>
-	<input type="hidden" id="hiddenrow" value="<%= analyzer.limitRowEnd %>">
+	<input type="hidden" id="hiddenrow" value="<%= analyzer.limitRowEnd%>">
 	<input type="hidden" id="hiddencol" value="<%= analyzer.limitColEnd%>">
 </div>
